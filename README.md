@@ -1,0 +1,6 @@
+# CodeQuest 2023 Submission
+In the 2023 [CodeQuest](https://codequest.club/) programming competition, competiting teams had to create bots that competed against one another in a 1v1 top-down tank game, set in a destructable tile grid with bouncing bullets. This repository contains the python code of the bot submitted by team PLACEHOLDER NAME (consisting only of me) which won first place.
+## Design Strategy
+This bot was designed around using raycasting to predict where bullets would travel and bounce in order to guide our tank to victory. As all tiles are aligned to a square grid, simplified raycasting could be achieved through a modified [line rasterisation algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm). Raycasting would be done on all bullets every frame to determine their travel paths in the near future, if the raycast detected a collision, a new raycast with the appropriate angle of reflection would be performed to determine its trajectory after bouncing.
+## Code Structure
+The source code for the bot is located under `firstTry/src/`, with game.py containing most of the added bot behaviour and map.py containing the custom class to store tile data. bulletTrack.py was also a custom class originally added to handle bullet path predictions but is unused in the final bot.
