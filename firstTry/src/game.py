@@ -305,7 +305,7 @@ class Game:
             if destroy:
                 return [-1000, -1000], velocity
             # bounce
-            delta = addVect(delta, scaleVect(-1, pos))
+            delta = addVect(delta, addVect(start, scaleVect(-1, pos)))
             if hori:
                 velocity = [-velocity[0], velocity[1]]
                 delta = [-delta[0], delta[1]]
@@ -433,10 +433,19 @@ class Game:
                 # too close
                 # obstacle avoidance
                 targetDir = [-deltaY * self.circlingDir, deltaX * self.circlingDir]
-                result = self.linecast(selfPos, targetDir)
+                end = addVect(selfPos, targetDir)
+                result = self.linecastBounds(selfPos, end)
+                if result != None:
+                    end = result[0]
+                newResult = self.linecast(selfPos, end)
+                if newResult != None:
+                    result = newResult
 
-                if result != None and distanceSqr(result[0], selfPos) < 20 * 20:
+                if result != None and distanceSqr(result[0], selfPos) < 30 * 30:
                     log(f"[{self.gameTime}] cycle swap: {result}")
+                    self.circlingDir *= -1
+                elif deltaPos < 20 * 20:
+                    log(f"[{self.gameTime}] cycle swap from lack of motion")
                     self.circlingDir *= -1
 
                 # circling
@@ -469,10 +478,19 @@ class Game:
                 # too close
                 # obstacle avoidance
                 targetDir = [-deltaY * self.circlingDir, deltaX * self.circlingDir]
-                result = self.linecast(selfPos, targetDir)
+                end = addVect(selfPos, targetDir)
+                result = self.linecastBounds(selfPos, end)
+                if result != None:
+                    end = result[0]
+                newResult = self.linecast(selfPos, end)
+                if newResult != None:
+                    result = newResult
 
                 if result != None and distanceSqr(result[0], selfPos) < 20 * 20:
                     log(f"[{self.gameTime}] cycle swap: {result}")
+                    self.circlingDir *= -1
+                elif deltaPos < 20 * 20:
+                    log(f"[{self.gameTime}] cycle swap from lack of motion")
                     self.circlingDir *= -1
 
                 # circling
@@ -492,7 +510,7 @@ class Game:
         # get all close bullets
         for bullet in self.bullets:
             bPos = self.objects[bullet]["position"]
-            if distanceSqr(bPos, selfPos) < 230 * 230:
+            if distanceSqr(bPos, selfPos) < 300 * 300:
                 dangerB.append((bPos, self.objects[bullet]["velocity"]))
 
         avoidDanger = [0.0, 0.0]
@@ -504,7 +522,7 @@ class Game:
             delta = addVect(newPos, scaleVect(-1, selfPos))
             delta[0] += 0.01
             sqrDist = delta[0] * delta[0] + delta[1] * delta[1]
-            if sqrDist < 110 * 110:
+            if sqrDist < 140 * 140:
                 velSqr = newVel[0] * newVel[0] + newVel[1] * newVel[1] + 0.001
                 dDotV = delta[0] * newVel[0] + delta[1] * newVel[1]
                 dangerVect = addVect(
@@ -512,9 +530,9 @@ class Game:
                 )
                 log(f"[{self.gameTime}] delta: {delta} calc dist:{dangerVect}")
                 lengthSqr = distanceSqr(dangerVect, [0, 0]) + 0.001
-                if lengthSqr < 40 * 40:
+                if lengthSqr < 60 * 60:
                     avoidDanger = addVect(
-                        avoidDanger, scaleVect(20 / lengthSqr, dangerVect)
+                        avoidDanger, scaleVect(40 / lengthSqr, dangerVect)
                     )
 
         log(f"[{self.gameTime}] bullet avoidance:{avoidDanger}")
@@ -544,9 +562,9 @@ class Game:
         if avoidDanger[0] != 0 or avoidDanger[1] != 0:
             movement = {"move": vect2Angle(avoidDanger[0], avoidDanger[1])}
 
-        safePos = [self.width / 2 + 100, self.height / 2 + 20]
+        safePos = [self.width / 2 + 100, self.height / 2]
         # endgame
-        if bounds[1][1] - bounds[0][1] < 110:
+        if bounds[1][1] - bounds[0][1] < 150:
             log(f"[{self.gameTime}] End game")
             if distanceSqr(safePos, selfPos) < 30 * 30:
                 movement = {"move": -1}
